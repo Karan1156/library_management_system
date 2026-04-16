@@ -90,24 +90,13 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Auto-detect environment
-IS_PYTHONANYWHERE = 'PYTHONANYWHERE_DOMAIN' in os.environ
-
-if IS_PYTHONANYWHERE:
-    # PythonAnywhere - place outside project folder
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': '/home/yourusername/data.sqlite',  # ← Absolute path
-        }
+# settings.py
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': '/home/karan0913/data.sqlite',  # ← Absolute path with your username
     }
-else:
-    # Local - place next to manage.py
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'data.sqlite',  # ← Relative to project root
-        }
-    }
+}
     
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
