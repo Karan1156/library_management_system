@@ -94,7 +94,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/home/karan0913/data.sqlite',  # ← Absolute path with your username
+        'NAME': '/home/karan0913/library_management_system/db.sqlite3',
     }
 }
     
