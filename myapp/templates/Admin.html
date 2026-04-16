@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h2><i class="bi bi-shield-lock-fill me-2"></i>Admin Dashboard</h2>
+        <hr>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Total Books</h6>
+                        <h3 class="mb-0">{{ books|length }}</h3>
+                    </div>
+                    <i class="bi bi-journal-bookmark-fill fs-1 text-primary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Total Users</h6>
+                        <h3 class="mb-0">{{ users|length }}</h3>
+                    </div>
+                    <i class="bi bi-people-fill fs-1 text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Active Borrowings</h6>
+                        <h3 class="mb-0">{{ issued|length }}</h3>
+                    </div>
+                    <i class="bi bi-arrow-left-right fs-1 text-warning"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted">Pending Approvals</h6>
+                        <h3 class="mb-0">{{ newuser|length }}</h3>
+                    </div>
+                    <i class="bi bi-clock-history fs-1 text-danger"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter by Author -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-10">
+                            <label class="form-label">Filter Books by Author</label>
+                            <select name="drop1" class="form-select">
+                                <option value="">All Authors</option>
+                                {% for author in author %}
+                                <option value="{{ author.id }}">{{ author.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-gradient w-100">
+                                <i class="bi bi-funnel"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Books Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-journal-bookmark-fill me-2"></i>Books Management</h5>
+                <a href="{% url 'addbook' %}" class="btn btn-sm btn-gradient">
+                    <i class="bi bi-plus-circle"></i> Add Book
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Book Name</th>
+                                <th>Author</th>
+                                <th>ISBN</th>
+                                <th>Available Copies</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for book in books %}
+                            <tr>
+                                <td>{{ book.id }}</td>
+                                <td>{{ book.name }}</td>
+                                <td>
+                                    {% if book.author.name %}
+                                        {{ book.author.name }}
+                                    {% else %}
+                                        {{ book.author }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ book.isbn }}</td>
+                                <td>{{ book.no_books }}</td>
+                                <td>
+                                    <a href="{% url 'editbook' book.id %}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'deletebook' book.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No books found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Approvals -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-person-check me-2"></i>Pending User Approvals</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for nu in newuser %}
+                            {% if not nu.isapproved %}
+                            <tr>
+                                <td>
+                                    {% if nu.user.username %}
+                                        {{ nu.user.username }}
+                                    {% else %}
+                                        {{ nu.user }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if nu.user.email %}
+                                        {{ nu.user.email }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-warning">Pending</span></td>
+                                <td>
+                                    <a href="{% url 'approve' nu.id %}" class="btn btn-sm btn-success">
+                                        <i class="bi bi-check-circle"></i> Approve
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No pending approvals</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Borrow Requests -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-envelope-paper me-2"></i>Borrow Requests</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Book</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in borrow %}
+                            {% if not req.isapproved %}
+                            <tr>
+                                <td>
+                                    {% if req.user.username %}
+                                        {{ req.user.username }}
+                                    {% else %}
+                                        {{ req.user }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if req.book.name %}
+                                        {{ req.book.name }}
+                                    {% else %}
+                                        {{ req.book }}
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-info">Pending</span></td>
+                                <td>
+                                    <a href="{% url 'approveborrow' req.id %}" class="btn btn-sm btn-success">
+                                        <i class="bi bi-check-circle"></i> Approve
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No pending borrow requests</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Borrowings -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>All Borrowings</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Book</th>
+                                <th>Issue Date</th>
+                                <th>Returned</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for issue in issued %}
+                            <tr>
+                                <td>
+                                    {% if issue.user.username %}
+                                        {{ issue.user.username }}
+                                    {% else %}
+                                        {{ issue.user }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if issue.book.name %}
+                                        {{ issue.book.name }}
+                                    {% else %}
+                                        {{ issue.book }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ issue.issue_date|date:"Y-m-d" }}</td>
+                                <td>
+                                    {% if issue.returned %}
+                                    <span class="badge bg-success">Yes</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">No</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not issue.returned %}
+                                    <a href="{% url 'update_issue' issue.id %}" class="btn btn-sm btn-info">
+                                        <i class="bi bi-calendar"></i> Update Date
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No borrowings found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
